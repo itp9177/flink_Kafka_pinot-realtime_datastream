@@ -1,0 +1,46 @@
+version: '2'
+
+networks:
+  app-tier:
+    driver: bridge
+
+services:
+  kafka:
+    image: 'bitnami/kafka:latest'
+    networks:
+      - app-tier
+    environment:
+      - KAFKA_CFG_NODE_ID=0
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+
+  jobmanager:
+    image: flink:1.18.1-scala_2.12
+    ports:
+      - "8081:8081"
+    command: standalone-job --job-classname com.job.ClassName [--job-id <job id>] [--fromSavepoint /path/to/savepoint [--allowNonRestoredState]] [job arguments]
+    volumes:
+      - /flinkJob:/opt/flink/usrlib
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        parallelism.default: 2        
+
+  taskmanager:
+    image: flink:1.18.1-scala_2.12
+    depends_on:
+      - jobmanager
+    command: taskmanager
+    scale: 1
+    volumes:
+      - /host/path/to/job/artifacts:/opt/flink/usrlib
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        taskmanager.numberOfTaskSlots: 2
+        parallelism.default: 2   
