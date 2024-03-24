@@ -10,7 +10,7 @@ docker-compose -f docker-compose.yml up
 
 ## Architecture 
 
-![Architecture] (https://raw.githubusercontent.com/itp9177/flink_Kafka-realtime_datastream/main/architecture.png)
+![Alt Architecture] (https://raw.githubusercontent.com/itp9177/flink_Kafka-realtime_datastream/main/architecture.png)
 
 
 ## License
