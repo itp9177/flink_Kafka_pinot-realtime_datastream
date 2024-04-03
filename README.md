@@ -1,6 +1,6 @@
 
 ## Description
-Real time state full OLAP data processing with apache flink, apache pinot and kafka
+Real time state full OLAP data processing with Apache Flink, Apache Pinot and Kafka
 
 Key Features:
 
@@ -13,9 +13,9 @@ Key Features:
 
 - OLAP (Online Analytical Processing) Data Storage with Pinot:
   * Leverages Pinot(distributed OLAP datastore) for low-latency querying and retrieval of data for near real-time insights from our Springboot App.
-  * Employs a hybrid table structure within Pinot. This combines a real-time table for storing the most recent data received through Flink, along with an offline table for storing historical older data. This enables efficient analysis of both real-time and historical trends.
+  * Employs a hybrid table structure within Pinot. This combines a real-time table for storing the most recent data received through Flink, along with an offline table for storing historical older data.(This enables efficient analysis of both real-time and historical data.)
 - Scalability:
-  * Utilize the distributed stricture of
+  * Leverage the distributed architecture of Apache Kafka, Apache Flink, and Pinot to enable deployment in a scalable cloud environment.
 ## Quick Start
 
 #### With docker-composer
