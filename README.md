@@ -2,7 +2,12 @@
 ## Description
 Real time state full OLAP data processing with Apache Flink, Apache Pinot and Kafka
 
-Key Features:
+
+## Architecture
+
+![App Screenshot](https://raw.githubusercontent.com/itp9177/flink_Kafka_pinot-realtime_datastream/main/architecture.png)
+
+## Key Features:
 
 - Data Acquisition and processing:
   * Continuously collects weather data from multiple locations every second using the open-meteo API
@@ -16,10 +21,6 @@ Key Features:
   * Employs a hybrid table structure within Pinot. This combines a real-time table for storing the most recent data received through Flink, along with an offline table for storing historical older data.(This enables efficient analysis of both real-time and historical data.)
 - Scalability:
   * Leverage the distributed architecture of Apache Kafka, Apache Flink, and Pinot to enable deployment in a scalable cloud environment.
-
-## Architecture
-
-![App Screenshot](https://raw.githubusercontent.com/itp9177/flink_Kafka_pinot-realtime_datastream/main/architecture.png)
 
 ## Quick Start
 
