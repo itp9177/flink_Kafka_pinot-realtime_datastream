@@ -33,5 +33,5 @@ build/
 .vscode/
 
 /Data-collection-api/mvnw
-/Data-collection-api/cmd
+/Data-collection-api/mvnw.cmd
 
