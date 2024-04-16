@@ -3,8 +3,10 @@ package com.itp.climate;
 import com.itp.climate.data.Collector;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Configuration;
 
 @SpringBootApplication
+@Configuration
 public class ClimateApplication {
 
 	public static void main(String[] args) {
@@ -19,7 +21,5 @@ public class ClimateApplication {
 				});
 	//	System.out.println(co.getForecast().subscribe());
 	}
-
-
 
 }
