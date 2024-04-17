@@ -17,12 +17,19 @@ public class Topic {
     @Bean
     public KafkaAdmin admin() {
         Map<String, Object> configs = new HashMap<>();
-        configs.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        configs.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9094");
         return new KafkaAdmin(configs);
     }
     @Bean
     public NewTopic topic1() {
-        return TopicBuilder.name("wea1")
+        return TopicBuilder.name("wea2")
+                .partitions(3)
+                .replicas(1)
+                .build();
+    }
+    @Bean
+    public NewTopic topic2() {
+        return TopicBuilder.name("wea4")
                 .partitions(3)
                 .replicas(1)
                 .build();
