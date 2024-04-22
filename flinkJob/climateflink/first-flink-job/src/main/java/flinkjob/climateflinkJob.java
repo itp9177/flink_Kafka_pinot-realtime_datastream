@@ -11,8 +11,9 @@ import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsIni
 import org.apache.flink.formats.json.JsonSerializationSchema;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import serializers.MyMsg1JsonSerilalizer;
-
+import serializers.V1ForecastGet200ResponseSerilalizer;
+import com.itp.openapi.model.V1ForecastGet200Response;
+import deserializer.V1ForecastGet200ResponseDeserializer;
 /**
  * Skeleton code for the datastream walkthrough
  */
@@ -21,11 +22,11 @@ public class climateflinkJob {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
      //   DataStream<String> mystream = env.fromElements("6","6","6").name("mydatasoruce");
-        KafkaSource<String> source = KafkaSource.<String>builder()
+        KafkaSource<V1ForecastGet200Response> source = KafkaSource.<V1ForecastGet200Response>builder()
                 .setBootstrapServers("http://localhost:9092")
                 .setTopics("topic1")
                 .setStartingOffsets(OffsetsInitializer.earliest())
-                .setValueOnlyDeserializer(new SimpleStringSchema())
+                .setValueOnlyDeserializer(new V1ForecastGet200ResponseDeserializer())
                 .build();
 
 
@@ -37,7 +38,7 @@ public class climateflinkJob {
                 .build();*/
 
       //  DataStream<MyMsg1> kafkaDataStream= env.fromSource(source2, WatermarkStrategy.noWatermarks(), "Kafka Source");
-        DataStream<String> kafkaDataStreamStr= env.fromSource(source, WatermarkStrategy.noWatermarks(), "Kafka Source 2");
+        DataStream<V1ForecastGet200Response> kafkaDataStreamStr= env.fromSource(source, WatermarkStrategy.noWatermarks(), "Kafka Source 2");
 
      /*   DataStream<String> kafkaData = kafkaDataStream.map(a->{
 
@@ -58,16 +59,16 @@ public class climateflinkJob {
                         )
                         .build();*/
 
-        KafkaSink<MyMsg1> sink = KafkaSink.<MyMsg1>builder()
+        KafkaSink<V1ForecastGet200Response> sink = KafkaSink.<V1ForecastGet200Response>builder()
                 .setBootstrapServers("http://localhost:9092")
-                .setRecordSerializer(KafkaRecordSerializationSchema.<MyMsg1>builder()
+                .setRecordSerializer(KafkaRecordSerializationSchema.<V1ForecastGet200Response>builder()
                         .setTopic("topic2")
-                        .setValueSerializationSchema(new MyMsg1JsonSerilalizer())
+                        .setValueSerializationSchema(new V1ForecastGet200ResponseSerilalizer())
                         .build())
                 .build();
 
       //  kafkaDataStream.map(MyMsg1::getName).print();
-        DataStream<MyMsg1> kafkaData2 = kafkaDataStreamStr.map(a->{MyMsg1 p = new MyMsg1(); p.setAge("23");p.setName(a); return p;});
+        DataStream<V1ForecastGet200Response> kafkaData2 = kafkaDataStreamStr.map(a->{V1ForecastGet200Response p = new V1ForecastGet200Response(); return p;});
       //kafkaData.sinkTo(sink);
         kafkaData2.sinkTo(sink);
         env.execute("new job 2");
