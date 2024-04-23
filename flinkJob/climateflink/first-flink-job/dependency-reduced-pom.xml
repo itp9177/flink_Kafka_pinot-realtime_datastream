@@ -52,6 +52,32 @@
     </pluginManagement>
     <plugins>
       <plugin>
+        <groupId>org.openapitools</groupId>
+        <artifactId>openapi-generator-maven-plugin</artifactId>
+        <version>7.1.0</version>
+        <executions>
+          <execution>
+            <id>1</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <inputSpec>${project.basedir}/src/main/resources/open-meteo-openapi.yml</inputSpec>
+              <generatorName>java</generatorName>
+              <configOptions>
+                <sourceFolder>src/gen/java/main</sourceFolder>
+                <interfaceOnly>true</interfaceOnly>
+                <useSpringBoot3>true</useSpringBoot3>
+                <withSeparateModelsAndApi>true</withSeparateModelsAndApi>
+              </configOptions>
+              <apiPackage>com.itp.openapi.api</apiPackage>
+              <modelPackage>com.itp.openapi.model</modelPackage>
+              <skipValidateSpec>true</skipValidateSpec>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
           <source>${target.java.version}</source>
@@ -87,7 +113,7 @@
               </filters>
               <transformers>
                 <transformer>
-                  <mainClass>flinkjob.FirstFlinkJob</mainClass>
+                  <mainClass>flinkjob.climateflinkJob</mainClass>
                 </transformer>
               </transformers>
             </configuration>
