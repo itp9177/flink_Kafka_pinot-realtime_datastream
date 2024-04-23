@@ -23,8 +23,8 @@ public class climateflinkJob {
 
      //   DataStream<String> mystream = env.fromElements("6","6","6").name("mydatasoruce");
         KafkaSource<V1ForecastGet200Response> source = KafkaSource.<V1ForecastGet200Response>builder()
-                .setBootstrapServers("http://localhost:9092")
-                .setTopics("topic1")
+                .setBootstrapServers("http://kafka:9094")
+                .setTopics("wea2")
                 .setStartingOffsets(OffsetsInitializer.earliest())
                 .setValueOnlyDeserializer(new V1ForecastGet200ResponseDeserializer())
                 .build();
@@ -59,18 +59,18 @@ public class climateflinkJob {
                         )
                         .build();*/
 
-        KafkaSink<V1ForecastGet200Response> sink = KafkaSink.<V1ForecastGet200Response>builder()
-                .setBootstrapServers("http://localhost:9092")
+ /*       KafkaSink<V1ForecastGet200Response> sink = KafkaSink.<V1ForecastGet200Response>builder()
+                .setBootstrapServers("kafka")
                 .setRecordSerializer(KafkaRecordSerializationSchema.<V1ForecastGet200Response>builder()
-                        .setTopic("topic2")
+                        .setTopic("wea4")
                         .setValueSerializationSchema(new V1ForecastGet200ResponseSerilalizer())
                         .build())
-                .build();
-
-      //  kafkaDataStream.map(MyMsg1::getName).print();
-        DataStream<V1ForecastGet200Response> kafkaData2 = kafkaDataStreamStr.map(a->{V1ForecastGet200Response p = new V1ForecastGet200Response(); return p;});
+                .build();*/
+        
+        kafkaDataStreamStr.map(V1ForecastGet200Response::getElevation).print();
+    //    DataStream<V1ForecastGet200Response> kafkaData2 = kafkaDataStreamStr.map(a->{V1ForecastGet200Response p = new V1ForecastGet200Response(); return p;});
       //kafkaData.sinkTo(sink);
-        kafkaData2.sinkTo(sink);
+    //    kafkaData2.sinkTo(sink);
         env.execute("new job 2");
 
 
