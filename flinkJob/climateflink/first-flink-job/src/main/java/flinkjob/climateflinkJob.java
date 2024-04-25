@@ -14,21 +14,34 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import serializers.V1ForecastGet200ResponseSerilalizer;
 import com.itp.openapi.model.V1ForecastGet200Response;
 import deserializer.V1ForecastGet200ResponseDeserializer;
+import org.apache.flink.streaming.api.functions.sink.PrintSinkFunction;
+import org.apache.flink.api.common.functions.MapFunction;
+
 /**
  * Skeleton code for the datastream walkthrough
  */
 public class climateflinkJob {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-
+          System.out.println("9094");
      //   DataStream<String> mystream = env.fromElements("6","6","6").name("mydatasoruce");
         KafkaSource<V1ForecastGet200Response> source = KafkaSource.<V1ForecastGet200Response>builder()
-                .setBootstrapServers("http://kafka:9094")
+                .setBootstrapServers("kafka:9092")
                 .setTopics("wea2")
-                .setStartingOffsets(OffsetsInitializer.earliest())
+                .setProperty("partition.discovery.interval.ms", "10000")
+                .setStartingOffsets(OffsetsInitializer.latest())
                 .setValueOnlyDeserializer(new V1ForecastGet200ResponseDeserializer())
                 .build();
 
+                KafkaSource<V1ForecastGet200Response> source2 = KafkaSource.<V1ForecastGet200Response>builder()
+                .setBootstrapServers("kafka:9092")
+                .setTopics("wea2")
+                .setProperty("partition.discovery.interval.ms", "10000")
+                .setStartingOffsets(OffsetsInitializer.latest())
+                .setValueOnlyDeserializer(new V1ForecastGet200ResponseDeserializer())
+                .build();
+     
+        PrintSinkFunction<V1ForecastGet200Response> printSink = new PrintSinkFunction<>();
 
    /*     KafkaSource<MyMsg1> source2 = KafkaSource.<MyMsg1>builder()
                 .setBootstrapServers("http://localhost:9092")
@@ -38,7 +51,8 @@ public class climateflinkJob {
                 .build();*/
 
       //  DataStream<MyMsg1> kafkaDataStream= env.fromSource(source2, WatermarkStrategy.noWatermarks(), "Kafka Source");
-        DataStream<V1ForecastGet200Response> kafkaDataStreamStr= env.fromSource(source, WatermarkStrategy.noWatermarks(), "Kafka Source 2");
+        DataStream<V1ForecastGet200Response> kafkaDataStreamStr= env.fromSource(source, WatermarkStrategy.noWatermarks(), "Kafka Source 2").setParallelism(2).name("kafka");
+       DataStream<V1ForecastGet200Response> kafkaDataStreamStr2= env.fromSource(source2, WatermarkStrategy.noWatermarks(), "Kafka Source 3").setParallelism(3).name("kafka3");
 
      /*   DataStream<String> kafkaData = kafkaDataStream.map(a->{
 
@@ -66,13 +80,23 @@ public class climateflinkJob {
                         .setValueSerializationSchema(new V1ForecastGet200ResponseSerilalizer())
                         .build())
                 .build();*/
-        
-        kafkaDataStreamStr.map(V1ForecastGet200Response::getElevation).print();
+               // KafkaSink<String> sink = kafkaDataStreamStr.map(a->a.get)
+               kafkaDataStreamStr.union(kafkaDataStreamStr2);
+               DataStream<V1ForecastGet200Response> dataStream = 
+               kafkaDataStreamStr.map(new MapFunction<V1ForecastGet200Response, V1ForecastGet200Response>() {
+                   @Override
+                   public V1ForecastGet200Response map(V1ForecastGet200Response value) throws Exception {
+                       return value;
+                   }
+               }).setParallelism(3).name("map data");
+               
+               
+               dataStream.print().name("print data 1");
+        dataStream.addSink(printSink).name("print data");
+
     //    DataStream<V1ForecastGet200Response> kafkaData2 = kafkaDataStreamStr.map(a->{V1ForecastGet200Response p = new V1ForecastGet200Response(); return p;});
       //kafkaData.sinkTo(sink);
     //    kafkaData2.sinkTo(sink);
         env.execute("new job 2");
-
-
     }
 }
