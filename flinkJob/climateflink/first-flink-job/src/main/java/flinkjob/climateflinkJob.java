@@ -16,15 +16,33 @@ import com.itp.openapi.model.V1ForecastGet200Response;
 import deserializer.V1ForecastGet200ResponseDeserializer;
 import org.apache.flink.streaming.api.functions.sink.PrintSinkFunction;
 import org.apache.flink.api.common.functions.MapFunction;
+import org.apache.flink.types.Row;
+
+import org.apache.pinot.common.utils.http.HttpClient;
+import org.apache.pinot.connector.flink.common.FlinkRowGenericRowConverter;
+import org.apache.pinot.connector.flink.http.PinotConnectionUtils;
+import org.apache.pinot.connector.flink.sink.PinotSinkFunction;
+import org.apache.pinot.controller.helix.ControllerRequestClient;
+import org.apache.pinot.spi.config.table.TableConfig;
+import org.apache.pinot.spi.data.Schema;
+import org.apache.pinot.spi.utils.builder.ControllerRequestURLBuilder;
+import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.common.typeinfo.Types;
+import org.apache.flink.api.java.typeutils.RowTypeInfo;
 
 /**
  * Skeleton code for the datastream walkthrough
  */
 public class climateflinkJob {
     public static void main(String[] args) throws Exception {
+
+        final TypeInformation<?>[] typeInformation = { Types.STRING, Types.STRING };
+        final String[] fields = { "name", "add" };
+        final RowTypeInfo TEST_TYPE_INFO = new RowTypeInfo(typeInformation, fields);
+
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-          System.out.println("9094");
-     //   DataStream<String> mystream = env.fromElements("6","6","6").name("mydatasoruce");
+        System.out.println("9094");
+
         KafkaSource<V1ForecastGet200Response> source = KafkaSource.<V1ForecastGet200Response>builder()
                 .setBootstrapServers("kafka:9092")
                 .setTopics("wea2")
@@ -33,70 +51,62 @@ public class climateflinkJob {
                 .setValueOnlyDeserializer(new V1ForecastGet200ResponseDeserializer())
                 .build();
 
-                KafkaSource<V1ForecastGet200Response> source2 = KafkaSource.<V1ForecastGet200Response>builder()
+        KafkaSource<V1ForecastGet200Response> source2 = KafkaSource.<V1ForecastGet200Response>builder()
                 .setBootstrapServers("kafka:9092")
                 .setTopics("wea2")
                 .setProperty("partition.discovery.interval.ms", "10000")
                 .setStartingOffsets(OffsetsInitializer.latest())
                 .setValueOnlyDeserializer(new V1ForecastGet200ResponseDeserializer())
                 .build();
-     
+
         PrintSinkFunction<V1ForecastGet200Response> printSink = new PrintSinkFunction<>();
 
-   /*     KafkaSource<MyMsg1> source2 = KafkaSource.<MyMsg1>builder()
-                .setBootstrapServers("http://localhost:9092")
-                .setTopics("topic2")
-                .setStartingOffsets(OffsetsInitializer.earliest())
-                .setValueOnlyDeserializer(new MyMsg1Deserializer())
-                .build();*/
+        DataStream<V1ForecastGet200Response> kafkaDataStreamStr = env
+                .fromSource(source, WatermarkStrategy.noWatermarks(), "Kafka Source 2").setParallelism(2).name("kafka source of climate data 1");
+        DataStream<V1ForecastGet200Response> kafkaDataStreamStr2 = env
+                .fromSource(source2, WatermarkStrategy.noWatermarks(), "Kafka Source 3").setParallelism(3).name("kafka source of climate data 2")
+                .name("kafka3");
 
-      //  DataStream<MyMsg1> kafkaDataStream= env.fromSource(source2, WatermarkStrategy.noWatermarks(), "Kafka Source");
-        DataStream<V1ForecastGet200Response> kafkaDataStreamStr= env.fromSource(source, WatermarkStrategy.noWatermarks(), "Kafka Source 2").setParallelism(2).name("kafka");
-       DataStream<V1ForecastGet200Response> kafkaDataStreamStr2= env.fromSource(source2, WatermarkStrategy.noWatermarks(), "Kafka Source 3").setParallelism(3).name("kafka3");
+        /*
+         * KafkaSink<V1ForecastGet200Response> sink =
+         * KafkaSink.<V1ForecastGet200Response>builder()
+         * .setBootstrapServers("kafka")
+         * .setRecordSerializer(KafkaRecordSerializationSchema.<V1ForecastGet200Response
+         * >builder()
+         * .setTopic("wea4")
+         * .setValueSerializationSchema(new V1ForecastGet200ResponseSerilalizer())
+         * .build())
+         * .build();
+         */
+        // KafkaSink<String> sink = kafkaDataStreamStr.map(a->a.get)
+        DataStream<V1ForecastGet200Response> dataStream1 = kafkaDataStreamStr.union(kafkaDataStreamStr2);
+        DataStream<V1ForecastGet200Response> dataStream = dataStream1
+                .map(new MapFunction<V1ForecastGet200Response, V1ForecastGet200Response>() {
+                    @Override
+                    public V1ForecastGet200Response map(V1ForecastGet200Response value) throws Exception {
+                        return value;
+                    }
+                }).setParallelism(3).name("Stream processing of data");
 
-     /*   DataStream<String> kafkaData = kafkaDataStream.map(a->{
+        DataStream<Row> dataStream3 = dataStream.map(data -> {
+            String name = "test name";
+            String add = "add";
+            return Row.of(name, add);
+        }).returns(TEST_TYPE_INFO).setParallelism(2).name("stream to pinot RowTypeInfo");
 
-            return a+"pp";});
-        KafkaSink<String> sink = KafkaSink.<String>builder()
-                .setBootstrapServers("http://localhost:9092")
-                .setRecordSerializer(KafkaRecordSerializationSchema.builder()
-                        .setTopic("topic1")
-                        .setKeySerializationSchema(new SimpleStringSchema())
-                        .setValueSerializationSchema(new SimpleStringSchema())
-                        .build())
-                .build();*/
-     /*   KafkaRecordSerializationSchema<MyMsg1> serializer =
-                KafkaRecordSerializationSchema.<MyMsg1>builder()
-                        .setTopic("topic2")
-                        .setValueSerializationSchema(
-                                new JsonSerializationSchema<>()
-                        )
-                        .build();*/
-
- /*       KafkaSink<V1ForecastGet200Response> sink = KafkaSink.<V1ForecastGet200Response>builder()
-                .setBootstrapServers("kafka")
-                .setRecordSerializer(KafkaRecordSerializationSchema.<V1ForecastGet200Response>builder()
-                        .setTopic("wea4")
-                        .setValueSerializationSchema(new V1ForecastGet200ResponseSerilalizer())
-                        .build())
-                .build();*/
-               // KafkaSink<String> sink = kafkaDataStreamStr.map(a->a.get)
-               kafkaDataStreamStr.union(kafkaDataStreamStr2);
-               DataStream<V1ForecastGet200Response> dataStream = 
-               kafkaDataStreamStr.map(new MapFunction<V1ForecastGet200Response, V1ForecastGet200Response>() {
-                   @Override
-                   public V1ForecastGet200Response map(V1ForecastGet200Response value) throws Exception {
-                       return value;
-                   }
-               }).setParallelism(3).name("map data");
-               
-               
-               dataStream.print().name("print data 1");
+        String url = "pinot-controller:9000";
+        dataStream.print().name("print data 1");
         dataStream.addSink(printSink).name("print data");
 
-    //    DataStream<V1ForecastGet200Response> kafkaData2 = kafkaDataStreamStr.map(a->{V1ForecastGet200Response p = new V1ForecastGet200Response(); return p;});
-      //kafkaData.sinkTo(sink);
-    //    kafkaData2.sinkTo(sink);
+        HttpClient httpClient = HttpClient.getInstance();
+        ControllerRequestClient client = new ControllerRequestClient(
+        ControllerRequestURLBuilder.baseUrl("http://pinot-controller:9000"), httpClient);
+        Schema schema = PinotConnectionUtils.getSchema(client, "test1");
+        TableConfig tableConfig = PinotConnectionUtils.getTableConfig(client, "test1", "OFFLINE");
+        dataStream3.addSink(new PinotSinkFunction<>(new FlinkRowGenericRowConverter(TEST_TYPE_INFO), tableConfig, schema)).name("sink to pinot instance");
+        
+        // kafkaData.sinkTo(sink);
+        // kafkaData2.sinkTo(sink);
         env.execute("new job 2");
     }
 }

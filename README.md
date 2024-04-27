@@ -32,10 +32,24 @@ docker-compose -f docker-compose.yml up
 ```
 
 ```javascript
-Apache Flink dashbord http://127.0.0.1:8081
-Apache Pinot dashbord http://127.0.0.1:9000
+Apache Flink dashboard http://127.0.0.1:8081
+Apache Pinot dashboard http://127.0.0.1:9000
 
 ```
+## Start flink job
+```javascript
+cd first-flink-job/
+
+```
+### Add the flink job via flink UI
+```javascript
+
+open Apache Flink dashboard on http://127.0.0.1:8081 
+add the compiled flink job JAR (target/first-flink-job-0.1.jar) from flink UI and submit the job
+
+```
+### flink job observability and metrix
+![App Screenshot](https://raw.githubusercontent.com/itp9177/flink_Kafka_pinot-realtime_datastream/main/architecture.png)
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
