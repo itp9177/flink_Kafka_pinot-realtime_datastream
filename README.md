@@ -50,6 +50,11 @@ add the compiled flink job JAR (target/first-flink-job-0.1.jar) from flink UI an
 ```
 ##### flink job observability and metrix
 ![App Screenshot](https://raw.githubusercontent.com/itp9177/flink_Kafka_pinot-realtime_datastream/main/flinkjob.png)
+
+## RoadMap
+ - Distributed colud deployment of the system 
+ - sample Apache pinot client to query data 
+ - load testing
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
