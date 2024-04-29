@@ -42,7 +42,9 @@ public class climateflinkJob {
 
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         System.out.println("9094");
-
+       
+        // sample climate data from kafka topic 
+        //testing data stream
         KafkaSource<V1ForecastGet200Response> source = KafkaSource.<V1ForecastGet200Response>builder()
                 .setBootstrapServers("kafka:9092")
                 .setTopics("wea2")
@@ -51,6 +53,8 @@ public class climateflinkJob {
                 .setValueOnlyDeserializer(new V1ForecastGet200ResponseDeserializer())
                 .build();
 
+        // sample climate data 2 from kafka topic 
+        //testing data stream
         KafkaSource<V1ForecastGet200Response> source2 = KafkaSource.<V1ForecastGet200Response>builder()
                 .setBootstrapServers("kafka:9092")
                 .setTopics("wea2")
@@ -79,6 +83,12 @@ public class climateflinkJob {
          * .build();
          */
         // KafkaSink<String> sink = kafkaDataStreamStr.map(a->a.get)
+
+
+        /*  Data stream processing 
+         testing code for data stream processing 
+         */
+
         DataStream<V1ForecastGet200Response> dataStream1 = kafkaDataStreamStr.union(kafkaDataStreamStr2);
         DataStream<V1ForecastGet200Response> dataStream = dataStream1
                 .map(new MapFunction<V1ForecastGet200Response, V1ForecastGet200Response>() {
@@ -87,20 +97,28 @@ public class climateflinkJob {
                         return value;
                     }
                 }).setParallelism(3).name("Stream processing of data");
-
+       
+        // sample data maping from datastream to RowRypeInfor
         DataStream<Row> dataStream3 = dataStream.map(data -> {
-            String name = "test name";
-            String add = "add";
+            String name = "testing name";
+            String add = "testing data";
             return Row.of(name, add);
         }).returns(TEST_TYPE_INFO).setParallelism(2).name("stream to pinot RowTypeInfo");
-
-        String url = "pinot-controller:9000";
+        
+        // testing print stream
         dataStream.print().name("print data 1");
         dataStream.addSink(printSink).name("print data");
 
+        /*
+         * sammple pinotsink from flink job 
+         */
+        String url = "pinot-controller:9000";
+        
         HttpClient httpClient = HttpClient.getInstance();
         ControllerRequestClient client = new ControllerRequestClient(
         ControllerRequestURLBuilder.baseUrl("http://pinot-controller:9000"), httpClient);
+
+        // sink sample data to pinot table
         Schema schema = PinotConnectionUtils.getSchema(client, "test1");
         TableConfig tableConfig = PinotConnectionUtils.getTableConfig(client, "test1", "OFFLINE");
         dataStream3.addSink(new PinotSinkFunction<>(new FlinkRowGenericRowConverter(TEST_TYPE_INFO), tableConfig, schema)).name("sink to pinot instance");
