@@ -29,6 +29,8 @@ services:
     ports:
       - "8081:8081"
     command: jobmanager
+    networks:
+      - app-tier
     environment:
       - |
         FLINK_PROPERTIES=
@@ -41,6 +43,8 @@ services:
       - jobmanager
     command: taskmanager
     scale: 2
+    networks:
+      - app-tier
     environment:
       - |
         FLINK_PROPERTIES=
@@ -50,6 +54,8 @@ services:
   pinot-zookeeper:
     image: zookeeper:3.5.6
     container_name: pinot-zookeeper
+    networks:
+      - app-tier
     ports:
       - "2181:2181"
     environment:
@@ -70,6 +76,8 @@ services:
     image: apachepinot/pinot:1.0.0
     command: "StartBroker -zkAddress pinot-zookeeper:2181"
     restart: unless-stopped
+    networks:
+      - app-tier
     container_name: "pinot-broker"
     ports:
       - "8099:8099"
@@ -81,6 +89,8 @@ services:
     image: apachepinot/pinot:1.0.0
     command: "StartServer -zkAddress pinot-zookeeper:2181"
     restart: unless-stopped
+    networks:
+      - app-tier
     container_name: "pinot-server"
     ports:
       - "8098:8098"
