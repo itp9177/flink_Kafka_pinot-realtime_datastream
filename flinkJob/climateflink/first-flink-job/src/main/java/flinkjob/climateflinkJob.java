@@ -86,7 +86,7 @@ public class climateflinkJob {
 
 
         /*  Data stream processing 
-         testing code for data stream processing 
+            testing code for data stream processing 
          */
 
         DataStream<V1ForecastGet200Response> dataStream1 = kafkaDataStreamStr.union(kafkaDataStreamStr2);

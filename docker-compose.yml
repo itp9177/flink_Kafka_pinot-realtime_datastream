@@ -54,6 +54,15 @@ services:
   pinot-zookeeper:
     image: zookeeper:3.5.6
     container_name: pinot-zookeeper
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 4G
+          
+        reservations:
+          cpus: '4'
+          memory: 4G
     networks:
       - app-tier
     ports:
@@ -65,6 +74,8 @@ services:
     image: apachepinot/pinot:1.0.0
     command: "StartController -zkAddress pinot-zookeeper:2181"
     container_name: pinot-controller
+    networks:
+      - app-tier
     restart: unless-stopped
     ports:
       - "9000:9000"
